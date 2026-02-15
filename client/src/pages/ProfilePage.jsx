@@ -1,20 +1,36 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const ProfilePage = () => {
+  const { authUser, updateProfile } = useContext(AuthContext);
+
   const [selectedImg, setSelectedImg] = useState(null);
   const navigate = useNavigate();
-  const [name, setName] = useState("thejas");
-  const [bio, setBio] = useState("Hello! I am using ChatBuddy.");
+  const [name, setName] = useState(authUser.fullName);
+  const [bio, setBio] = useState(authUser.bio);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/");
+    if (!selectedImg) {
+      await updateProfile({ fullName: name, bio });
+      navigate("/");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedImg);
+    reader.onload = async () => {
+      const base64Image = reader.result;
+      await updateProfile({ profilePic: base64Image, fullName: name, bio });
+      navigate("/");
+    };
   };
 
   return (
-    <div className="min-h-screen bg-[url('./src/assets/bgImage.svg')] bg-cover bg-no-repeat flex items-center justify-center">
+    <div className="min-h-screen bg-[url('./src/assets/bgImage.jpg')] bg-cover bg-no-repeat flex items-center justify-center">
       <div className="w-5/6 max-w-2xl backdrop-blur-2xl text-gray-300 border-2 border-gray-600 flex items-center justify-between max-sm:flex-col-reverse rounded-lg">
         <form
           onSubmit={handleSubmit}
@@ -63,15 +79,19 @@ const ProfilePage = () => {
 
           <button
             type="submit"
-            className="bg-linear-to-r from-purple-400 to-violet-600 text-white p-2 rounded-full text-lg cursor-pointer"
+            className="bg-gradient-to-r from-purple-400 to-violet-600 text-white p-2 rounded-full text-lg cursor-pointer"
           >
             Save
           </button>
         </form>
 
         <img
-          src={assets.logo_icon}
-          className="max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10"
+          className="max-w-44 aspect-square mx-10 max-sm:mt-10 rounded-full object-cover"
+          src={
+            selectedImg
+              ? URL.createObjectURL(selectedImg)
+              : authUser?.profilePic || assets.logo_icon
+          }
           alt=""
         />
       </div>

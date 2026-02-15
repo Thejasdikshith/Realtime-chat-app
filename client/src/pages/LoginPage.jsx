@@ -1,6 +1,8 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import assets from "../assets/assets";
+import { AuthContext } from "../../context/AuthContext";
+
 const LoginPage = () => {
   const [currentState, setCurrentState] = useState("Sign up");
   const [fullName, setFullName] = useState("");
@@ -9,12 +11,21 @@ const LoginPage = () => {
   const [bio, setBio] = useState("");
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
 
+  const { login } = useContext(AuthContext);
+
   const onSubmitHandler = (e) => {
     e.preventDefault();
+    console.log("SUBMIT CLICKED", currentState, isDataSubmitted);
     if (currentState === "Sign up" && !isDataSubmitted) {
       setIsDataSubmitted(true);
       return;
     }
+    login(currentState === "Sign up" ? "signup" : "login", {
+      fullName,
+      email,
+      password,
+      bio,
+    });
   };
 
   return (
@@ -85,7 +96,7 @@ const LoginPage = () => {
 
         <button
           type="submit"
-          className="py-3 bg-linear-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer"
+          className="py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer"
         >
           {currentState === "Sign up" ? "Create Account" : "Login"}
         </button>
